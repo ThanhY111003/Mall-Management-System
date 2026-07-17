@@ -4,6 +4,7 @@ import Login from './components/pages/auth/Login.jsx';
 import Dashboard from './components/pages/dashboard/Dashboard.jsx';
 import TenantEditor from './components/pages/tenant/TenantEditor.jsx';
 import ShopViewer from './components/pages/public/ShopViewer.jsx';
+import TenantChat from './components/pages/tenant/TenantChat.jsx';
 
 // Create Authentication Context
 const AuthContext = createContext(null);
@@ -59,6 +60,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={['TENANT', 'ADMIN']}>
             <TenantEditor />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/tenant/chat/:shopId" 
+        element={
+          <ProtectedRoute allowedRoles={['TENANT', 'ADMIN']}>
+            <TenantChat />
           </ProtectedRoute>
         } 
       />

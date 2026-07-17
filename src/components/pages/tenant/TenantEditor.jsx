@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import grapesjs from 'grapesjs';
 import webpagePlugin from 'grapesjs-preset-webpage';
 import 'grapesjs/dist/css/grapes.min.css';
+import { sportsStoreTemplate } from './templates/sportsStoreTemplate.js';
+import { foodStoreTemplate } from './templates/foodStoreTemplate.js';
 
 export default function TenantEditor() {
   const { shopId } = useParams();
@@ -25,13 +27,15 @@ export default function TenantEditor() {
       })
       .then((data) => {
         if (data) {
-          setBrandName(data.brandName || '');
-          setEmailContact(data.emailContact || '');
+          setBrandName(data.brandName || 'NEO-SPORT');
+          setEmailContact(data.emailContact || 'contact@neo-sport.vn');
           
           // Initialize editor with loaded data
           initEditor(data.websiteConfig ? JSON.parse(data.websiteConfig) : null);
         } else {
           // Initialize empty editor
+          setBrandName('NEO-SPORT');
+          setEmailContact('contact@neo-sport.vn');
           initEditor(null);
         }
       })
@@ -69,23 +73,33 @@ export default function TenantEditor() {
       if (projectData) {
         editor.loadProjectData(projectData);
       } else {
-        // Set basic starter template
-        editor.setComponents(`
-          <div style="padding: 50px; font-family: sans-serif; text-align: center; background-color: #f8fafc; color: #1e293b;">
-            <h1 style="font-size: 3rem; margin-bottom: 10px; color: #6366f1;">Chào Mừng Đến Với Cửa Hàng</h1>
-            <p style="font-size: 1.2rem; color: #64748b; max-width: 600px; margin: 0 auto 20px;">
-              Chào mừng quý khách đến mua sắm! Chúng tôi chuyên cung cấp các sản phẩm chất lượng cao với dịch vụ tốt nhất.
-            </p>
-            <button style="background-color: #6366f1; color: white; border: none; padding: 12px 24px; font-size: 1rem; font-weight: bold; border-radius: 6px; cursor: pointer;">
-              Xem Sản Phẩm
-            </button>
-          </div>
-        `);
+        // Set basic starter template with sports shop
+        editor.setComponents(sportsStoreTemplate);
       }
 
       editorRef.current = editor;
     } catch (e) {
       console.error('Error initializing GrapesJS:', e);
+    }
+  };
+
+  const applySportsTemplate = () => {
+    if (!editorRef.current) return;
+    const confirm = window.confirm("Bạn có chắc chắn muốn áp dụng mẫu Giày & Quần Áo Thể Thao? Thiết kế hiện tại trong khung soạn thảo sẽ bị thay thế.");
+    if (confirm) {
+      editorRef.current.setComponents(sportsStoreTemplate);
+      setBrandName('NEO-SPORT');
+      setEmailContact('contact@neo-sport.vn');
+    }
+  };
+
+  const applyFoodTemplate = () => {
+    if (!editorRef.current) return;
+    const confirm = window.confirm("Bạn có chắc chắn muốn áp dụng mẫu Nhà Hàng & Đồ Ăn? Thiết kế hiện tại trong khung soạn thảo sẽ bị thay thế.");
+    if (confirm) {
+      editorRef.current.setComponents(foodStoreTemplate);
+      setBrandName('GUSTO RESTO');
+      setEmailContact('reservation@gusto.vn');
     }
   };
 
@@ -173,7 +187,43 @@ export default function TenantEditor() {
           </div>
         </div>
 
-        <div>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button 
+            onClick={applySportsTemplate} 
+            className="btn" 
+            style={{ 
+              padding: '0.5rem 1.25rem', 
+              fontSize: '0.9rem', 
+              background: 'linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)', 
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(244, 63, 94, 0.3)'
+            }}
+            disabled={saving}
+          >
+            Mẫu Thể Thao
+          </button>
+          <button 
+            onClick={applyFoodTemplate} 
+            className="btn" 
+            style={{ 
+              padding: '0.5rem 1.25rem', 
+              fontSize: '0.9rem', 
+              background: 'linear-gradient(135deg, #e65f2b 0%, #ff8c32 100%)', 
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(230, 95, 43, 0.3)'
+            }}
+            disabled={saving}
+          >
+            Mẫu Nhà Hàng
+          </button>
           <button 
             onClick={handleSave} 
             className="btn btn-success" 

@@ -21,8 +21,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Tạm tắt CSRF để dễ test API
                 .authorizeHttpRequests(auth -> auth
-                        // Cho phép truy cập công khai các API xác thực và xem shop
-                        .requestMatchers("/api/auth/**", "/api/public/**").permitAll()
+                        // Cho phép truy cập công khai các API xác thực, xem shop và WebSocket chat
+                        .requestMatchers("/api/auth/**", "/api/public/**", "/chat-ws/**").permitAll()
                         // Cho phép truy cập công khai các đường dẫn giao diện React
                         .requestMatchers("/", "/login", "/dashboard", "/shop/**", "/tenant/editor/**").permitAll()
                         // Cho phép truy cập công khai tài nguyên tĩnh

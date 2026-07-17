@@ -463,13 +463,14 @@ export default function Dashboard() {
                         <th>Tên Sạp</th>
                         <th>Người Quản Lý (Reseller)</th>
                         <th>Website Cửa Hàng</th>
-                        <th>Hành Động Thiết Kế</th>
+                        <th>Thiết Kế</th>
+                        <th>Hỗ Trợ Khách Hàng</th>
                       </tr>
                     </thead>
                     <tbody>
                       {shops.length === 0 ? (
                         <tr>
-                          <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Bạn chưa thuê sạp hàng nào. Liên hệ Reseller để thuê sạp.</td>
+                          <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Bạn chưa thuê sạp hàng nào. Liên hệ Reseller để thuê sạp.</td>
                         </tr>
                       ) : (
                         shops.map(s => (
@@ -493,6 +494,15 @@ export default function Dashboard() {
                                 style={{ padding: '0.35rem 0.8rem', fontSize: '0.85rem' }}
                               >
                                 Thiết Kế Web
+                              </button>
+                            </td>
+                            <td>
+                              <button 
+                                onClick={() => navigate(`/tenant/chat/${s.id}`)}
+                                className="btn"
+                                style={{ padding: '0.35rem 0.8rem', fontSize: '0.85rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 600, cursor: 'pointer' }}
+                              >
+                                Tin Nhắn Chat
                               </button>
                             </td>
                           </tr>
