@@ -75,6 +75,11 @@ export default function TenantChat() {
         setMessages(data);
       })
       .catch(err => console.error('Error fetching chat history:', err));
+
+    // Mark conversation as read
+    fetch(`/api/chat/mark-read/${shopId}/${activeClientId}`, {
+      method: 'POST'
+    }).catch(err => console.error('Error marking as read:', err));
   }, [shopId, activeClientId]);
 
   // 3. Set up WebSocket connection for Tenant
@@ -106,6 +111,8 @@ export default function TenantChat() {
             return prev;
           }
           if (incomingMsg.clientId === activeClientId) {
+            fetch(`/api/chat/mark-read/${shopId}/${activeClientId}`, { method: 'POST' })
+              .catch(err => console.error('Error marking as read:', err));
             return [...prev, incomingMsg];
           }
           return prev;

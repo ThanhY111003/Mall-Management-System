@@ -27,8 +27,34 @@ export default function Dashboard() {
   const [selectedShop, setSelectedShop] = useState(null);
   const [selectedTenantId, setSelectedTenantId] = useState('');
 
+  // Orders Management States
+  const [showOrdersModal, setShowOrdersModal] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [selectedOrdersShop, setSelectedOrdersShop] = useState(null);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [notifications, setNotifications] = useState({});
+
   useEffect(() => {
     fetchData();
+  }, [user]);
+
+  // Poll notifications for Tenant role
+  useEffect(() => {
+    if (!user || user.role !== 'TENANT') return;
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch('/api/tenant/shops/notifications');
+        if (res.ok) {
+          const data = await res.json();
+          setNotifications(data);
+        }
+      } catch (err) {
+        console.error('Không thể tải thông báo:', err);
+      }
+    };
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 15000);
+    return () => clearInterval(interval);
   }, [user]);
 
   const fetchData = async () => {
@@ -179,6 +205,56 @@ export default function Dashboard() {
       }
     } catch (err) {
       setError('Đã xảy ra lỗi hệ thống.');
+    }
+  };
+
+  const handleOpenOrdersModal = async (shop) => {
+    setSelectedOrdersShop(shop);
+    setShowOrdersModal(true);
+    setLoadingOrders(true);
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch(`/api/tenant/orders/${shop.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setOrders(data);
+      } else {
+        const text = await res.text();
+        setError(text || "Không thể tải danh sách đơn hàng.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Lỗi kết nối khi tải đơn hàng.");
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId, status) => {
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch(`/api/tenant/orders/update-status/${orderId}?status=${status}`, {
+        method: 'POST'
+      });
+      if (res.ok) {
+        setSuccess(`Cập nhật trạng thái đơn hàng #${orderId} thành công!`);
+        // Refresh local orders list
+        if (selectedOrdersShop) {
+          const freshRes = await fetch(`/api/tenant/orders/${selectedOrdersShop.id}`);
+          if (freshRes.ok) {
+            const data = await freshRes.json();
+            setOrders(data);
+          }
+        }
+      } else {
+        const text = await res.text();
+        setError(text || "Cập nhật thất bại.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Lỗi kết nối khi cập nhật đơn hàng.");
     }
   };
 
@@ -454,7 +530,6 @@ export default function Dashboard() {
                 <div className="section-header">
                   <h2>Sạp Hàng Tôi Đang Thuê</h2>
                 </div>
-
                 <div className="glass-panel table-container">
                   <table>
                     <thead>
@@ -464,13 +539,15 @@ export default function Dashboard() {
                         <th>Người Quản Lý (Reseller)</th>
                         <th>Website Cửa Hàng</th>
                         <th>Thiết Kế</th>
+                        <th>Sản Phẩm</th>
+                        <th>Đơn Hàng & Đặt Bàn</th>
                         <th>Hỗ Trợ Khách Hàng</th>
                       </tr>
                     </thead>
                     <tbody>
                       {shops.length === 0 ? (
                         <tr>
-                          <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Bạn chưa thuê sạp hàng nào. Liên hệ Reseller để thuê sạp.</td>
+                          <td colSpan="8" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Bạn chưa thuê sạp hàng nào. Liên hệ Reseller để thuê sạp.</td>
                         </tr>
                       ) : (
                         shops.map(s => (
@@ -498,11 +575,39 @@ export default function Dashboard() {
                             </td>
                             <td>
                               <button 
+                                onClick={() => navigate(`/tenant/products/${s.id}`)}
+                                className="btn"
+                                style={{ padding: '0.35rem 0.8rem', fontSize: '0.85rem', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 600, cursor: 'pointer' }}
+                              >
+                                Sản Phẩm
+                              </button>
+                            </td>
+                            <td>
+                              <button 
+                                onClick={() => handleOpenOrdersModal(s)}
+                                className="btn"
+                                style={{ position: 'relative', padding: '0.35rem 0.8rem', fontSize: '0.85rem', background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 600, cursor: 'pointer' }}
+                              >
+                                Xem Đơn Hàng
+                                {notifications[s.id]?.pendingOrders > 0 && (
+                                  <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '0.7rem', fontWeight: 'bold', boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }}>
+                                    {notifications[s.id].pendingOrders}
+                                  </span>
+                                )}
+                              </button>
+                            </td>
+                            <td>
+                              <button 
                                 onClick={() => navigate(`/tenant/chat/${s.id}`)}
                                 className="btn"
-                                style={{ padding: '0.35rem 0.8rem', fontSize: '0.85rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 600, cursor: 'pointer' }}
+                                style={{ position: 'relative', padding: '0.35rem 0.8rem', fontSize: '0.85rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 600, cursor: 'pointer' }}
                               >
                                 Tin Nhắn Chat
+                                {notifications[s.id]?.unreadChats > 0 && (
+                                  <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#ef4444', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '0.7rem', fontWeight: 'bold', boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }}>
+                                    {notifications[s.id].unreadChats}
+                                  </span>
+                                )}
                               </button>
                             </td>
                           </tr>
@@ -510,8 +615,7 @@ export default function Dashboard() {
                       )}
                     </tbody>
                   </table>
-                </div>
-              </div>
+                </div>              </div>
             )}
           </>
         )}
@@ -621,6 +725,126 @@ export default function Dashboard() {
                 <button type="submit" className="btn btn-success">Xác Nhận Cho Thuê</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Orders Modal */}
+      {showOrdersModal && (
+        <div className="modal-overlay" onClick={() => { setShowOrdersModal(false); setSelectedOrdersShop(null); setOrders([]); }}>
+          <div className="glass-panel modal-content" style={{ maxWidth: '950px', width: '100%', maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Quản lý Đơn hàng & Đặt bàn: {selectedOrdersShop?.shopName}</h3>
+              <button className="modal-close" onClick={() => { setShowOrdersModal(false); setSelectedOrdersShop(null); setOrders([]); }}>×</button>
+            </div>
+            
+            {loadingOrders ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>Đang tải danh sách đơn hàng...</div>
+            ) : orders.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>Chưa có đơn hàng hoặc lịch đặt bàn nào.</div>
+            ) : (
+              <div className="table-container" style={{ marginTop: '1rem' }}>
+                <table style={{ width: '100%' }}>
+                  <thead>
+                    <tr>
+                      <th>Mã ĐH</th>
+                      <th>Khách Hàng / SĐT</th>
+                      <th>Loại</th>
+                      <th>Chi Tiết Giao Nhận / Đặt Bàn</th>
+                      <th>Nội Dung Chi Tiết (Sản Phẩm / Ghi Chú)</th>
+                      <th>Tổng Tiền</th>
+                      <th>Trạng Thái</th>
+                      <th>Hành Động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map(o => {
+                      const isBooking = o.paymentMethod === 'BOOKING';
+                      let parsedDetails = null;
+                      try {
+                        parsedDetails = JSON.parse(o.itemsJson);
+                      } catch (e) {
+                        parsedDetails = o.itemsJson;
+                      }
+
+                      return (
+                        <tr key={o.id}>
+                          <td>#{o.id}</td>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>{o.customerName}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{o.customerPhone}</div>
+                          </td>
+                          <td>
+                            <span style={{ 
+                              padding: '0.2rem 0.5rem', 
+                              borderRadius: '4px', 
+                              fontSize: '0.75rem', 
+                              fontWeight: 600,
+                              background: isBooking ? 'rgba(230, 95, 43, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                              color: isBooking ? '#ff8c32' : '#10b981'
+                            }}>
+                              {isBooking ? 'ĐẶT BÀN' : 'MUA HÀNG'}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: '0.85rem', maxWidth: '200px', wordBreak: 'break-word' }}>
+                            {o.customerAddress}
+                          </td>
+                          <td style={{ fontSize: '0.85rem', maxWidth: '250px' }}>
+                            {isBooking ? (
+                              <div>
+                                {parsedDetails?.bookingNotes && (
+                                  <div>Ghi chú: <i>{parsedDetails.bookingNotes}</i></div>
+                                )}
+                              </div>
+                            ) : (
+                              <div>
+                                {Array.isArray(parsedDetails) && parsedDetails.map((item, idx) => (
+                                  <div key={idx}>
+                                    - {item.name} (x{item.quantity}) {item.size && `[Size: ${item.size}]`}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </td>
+                          <td style={{ fontWeight: 600 }}>
+                            {isBooking ? '-' : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(o.totalAmount)}
+                          </td>
+                          <td>
+                            <span className={`badge-status ${o.status.toLowerCase()}`}>
+                              {o.status === 'PENDING' ? 'Chờ duyệt' : o.status === 'CONFIRMED' ? 'Đã duyệt' : 'Đã hủy'}
+                            </span>
+                          </td>
+                          <td>
+                            {o.status === 'PENDING' && (
+                              <div style={{ display: 'flex', gap: '4px' }}>
+                                <button 
+                                  onClick={() => handleUpdateOrderStatus(o.id, 'CONFIRMED')}
+                                  className="btn btn-success" 
+                                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                                >
+                                  Duyệt
+                                </button>
+                                <button 
+                                  onClick={() => handleUpdateOrderStatus(o.id, 'CANCELLED')}
+                                  className="btn btn-secondary" 
+                                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', backgroundColor: 'var(--color-danger)' }}
+                                >
+                                  Hủy
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            
+            <div className="modal-footer" style={{ marginTop: '1.5rem' }}>
+              <button type="button" className="btn btn-secondary" onClick={() => { setShowOrdersModal(false); setSelectedOrdersShop(null); setOrders([]); }}>Đóng</button>
+            </div>
           </div>
         </div>
       )}

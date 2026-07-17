@@ -3,6 +3,54 @@ import { useParams } from 'react-router-dom';
 import grapesjs from 'grapesjs';
 import webpagePlugin from 'grapesjs-preset-webpage';
 import 'grapesjs/dist/css/grapes.min.css';
+import DOMPurify from 'dompurify';
+import ReactDOM from 'react-dom';
+
+function ProductGrid({ products, onAddToCart, formatPrice }) {
+  if (products.length === 0) {
+    return <p style={{ color: '#9ca3af', textAlign: 'center', gridColumn: '1 / -1', padding: '2rem' }}>Chưa có sản phẩm nào.</p>;
+  }
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2.5rem', width: '100%' }}>
+      {products.map(p => (
+        <div key={p.id} className="product-card" style={{ background: '#1e293b', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
+          <div style={{ position: 'relative', background: '#0f172a', height: '280px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            {p.imageUrl ? (
+              <img src={p.imageUrl} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <div style={{ color: '#475569' }}>Không có ảnh</div>
+            )}
+          </div>
+          <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+            <span style={{ color: '#64748b', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>{p.category || 'Sản phẩm'}</span>
+            <h3 style={{ margin: '0.5rem 0 1rem 0', fontSize: '1.25rem', fontWeight: 700, color: '#fff' }}>{p.name}</h3>
+            <p style={{ color: '#9ca3af', fontSize: '0.85rem', marginBottom: '1.5rem', wordBreak: 'break-word' }}>{p.description}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+              <div>
+                <span style={{ fontWeight: 800, color: '#fb7185', fontSize: '1.35rem' }}>{formatPrice(p.price)}</span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToCart(p.id, p.name, p.price, p.imageUrl);
+                }}
+                disabled={p.stock === 0}
+                className="add-to-cart-btn"
+                style={{ background: '#f43f5e', border: 'none', borderRadius: '10px', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}
+              >
+                {p.stock === 0 ? (
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>Hết</span>
+                ) : (
+                  <svg style={{ width: '20px', height: '20px', fill: 'currentColor' }} viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function ShopViewer({ shopId: propShopId }) {
   const { shopId: routeShopId } = useParams();
@@ -14,6 +62,8 @@ export default function ShopViewer({ shopId: propShopId }) {
   const [shopConfig, setShopConfig] = useState(null);
   const [html, setHtml] = useState('');
   const [css, setCss] = useState('');
+  const [products, setProducts] = useState([]);
+  const [portalTarget, setPortalTarget] = useState(null);
 
   // Interactive Shopping States
   const [cart, setCart] = useState([]);
@@ -22,6 +72,7 @@ export default function ShopViewer({ shopId: propShopId }) {
   const [selectedSize, setSelectedSize] = useState('41');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const [lastOrderId, setLastOrderId] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
   
   // Checkout Form States
@@ -67,6 +118,24 @@ export default function ShopViewer({ shopId: propShopId }) {
     }
     return `${protocol}//${loc.host}/chat-ws`;
   };
+
+  // Fetch dynamic products
+  useEffect(() => {
+    fetch(`/api/public/products/${shopId}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setProducts)
+      .catch((err) => console.error('Lỗi tải sản phẩm:', err));
+  }, [shopId]);
+
+  // Find placeholder target for Portal
+  useEffect(() => {
+    if (!html) return;
+    const timer = setTimeout(() => {
+      const target = document.getElementById('dynamic-products-container');
+      setPortalTarget(target);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [html]);
 
   // WebSocket Chat Client logic for Customer
   useEffect(() => {
@@ -171,7 +240,11 @@ export default function ShopViewer({ shopId: propShopId }) {
             const compiledHtml = parser.getHtml();
             const compiledCss = parser.getCss();
 
-            setHtml(compiledHtml);
+            const sanitizedHtml = DOMPurify.sanitize(compiledHtml, {
+              ADD_ATTR: ['data-product-id', 'data-product-name', 'data-product-price', 'data-product-image', 'data-product-desc'],
+            });
+
+            setHtml(sanitizedHtml);
             setCss(compiledCss);
 
             parser.destroy();
@@ -254,6 +327,14 @@ export default function ShopViewer({ shopId: propShopId }) {
 
   // Intercept events inside raw HTML canvas
   const handleCanvasClick = (e) => {
+    // Detect "Order Lookup" link click
+    const lookupLink = e.target.closest('a[href*="/orders/lookup"]');
+    if (lookupLink) {
+      e.preventDefault();
+      window.open(`/orders/lookup?shopId=${shopId}`, '_blank');
+      return;
+    }
+
     // 1. Detect view cart icon click in header
     const cartBtn = e.target.closest('.view-cart-btn');
     if (cartBtn) {
@@ -310,28 +391,78 @@ export default function ShopViewer({ shopId: propShopId }) {
   };
 
   // Submit checkout order
-  const handleCheckoutSubmit = (e) => {
+  const handleCheckoutSubmit = async (e) => {
     e.preventDefault();
     if (!customerName || !customerPhone || !customerAddress) {
       alert('Vui lòng điền đầy đủ thông tin giao nhận hàng!');
       return;
     }
 
-    setIsCheckoutOpen(false);
-    setCheckoutSuccess(true);
-    setCart([]); // Clear cart
+    try {
+      const res = await fetch('/api/public/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shopId: parseInt(shopId, 10),
+          clientId,
+          customerName,
+          customerPhone,
+          customerAddress,
+          paymentMethod,
+          itemsJson: JSON.stringify(cart),
+          totalAmount: subtotal,
+        }),
+      });
+      if (!res.ok) throw new Error('Đặt hàng thất bại');
+      const data = await res.json();
+      setLastOrderId(data.id);
+      setIsCheckoutOpen(false);
+      setCheckoutSuccess(true);
+      setCart([]);
+    } catch (err) {
+      alert('Lỗi khi đặt hàng, vui lòng thử lại!');
+    }
   };
 
   // Submit Table Booking Reservation
-  const handleBookingSubmit = (e) => {
+  const handleBookingSubmit = async (e) => {
     e.preventDefault();
     if (!bookingName || !bookingPhone || !bookingDate || !bookingTime) {
       alert('Vui lòng điền đầy đủ thông tin liên hệ và lịch đặt bàn!');
       return;
     }
 
-    setIsBookingOpen(false);
-    setBookingSuccess(true);
+    try {
+      const bookingAddress = `${bookingDate} ${bookingTime} - Số khách: ${bookingGuests}`;
+      const bookingDetails = {
+        bookingDate,
+        bookingTime,
+        bookingGuests,
+        bookingNotes
+      };
+
+      const res = await fetch('/api/public/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shopId: parseInt(shopId, 10),
+          clientId,
+          customerName: bookingName,
+          customerPhone: bookingPhone,
+          customerAddress: bookingAddress,
+          paymentMethod: 'BOOKING',
+          itemsJson: JSON.stringify(bookingDetails),
+          totalAmount: 0,
+        }),
+      });
+      if (!res.ok) throw new Error('Đặt bàn thất bại');
+      const data = await res.json();
+      setLastOrderId(data.id);
+      setIsBookingOpen(false);
+      setBookingSuccess(true);
+    } catch (err) {
+      alert('Lỗi khi đặt bàn, vui lòng thử lại!');
+    }
   };
 
   // Chat message submission via WebSocket
@@ -542,6 +673,11 @@ export default function ShopViewer({ shopId: propShopId }) {
       {/* Raw HTML Canvas Container */}
       <div onClick={handleCanvasClick} dangerouslySetInnerHTML={{ __html: html }} />
 
+      {portalTarget && ReactDOM.createPortal(
+        <ProductGrid products={products} onAddToCart={addToCart} formatPrice={formatPrice} />,
+        portalTarget
+      )}
+
       {/* Floating Chat Bubble Button Fallback (only if NOT present in raw GrapesJS HTML and Chat is closed) */}
       {!isChatOpen && !hasSupportBtnInHtml && (
         <button 
@@ -570,6 +706,41 @@ export default function ShopViewer({ shopId: propShopId }) {
           </svg>
         </button>
       )}
+
+      {/* Floating Order Lookup Button */}
+      <button 
+        onClick={() => window.open(`/orders/lookup?shopId=${shopId}`, '_blank')}
+        style={{
+          position: 'fixed',
+          bottom: '30px',
+          left: '30px',
+          background: isGusto ? 'linear-gradient(135deg, #e65f2b 0%, #ff8c32 100%)' : 'linear-gradient(135deg, #f43f5e 0%, #fb7185 100%)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50px',
+          padding: '0.8rem 1.4rem',
+          fontWeight: 700,
+          fontSize: '0.9rem',
+          cursor: 'pointer',
+          boxShadow: isGusto ? '0 10px 25px rgba(230,95,43,0.35)' : '0 10px 25px rgba(244,63,94,0.35)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          zIndex: 999,
+          transition: 'all 0.3s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-3px)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+        }}
+      >
+        <svg style={{ width: '18px', height: '18px', fill: 'currentColor' }} viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        Tra cứu đơn hàng
+      </button>
 
       {/* Toast Notification */}
       {toastMessage && (
@@ -814,12 +985,17 @@ export default function ShopViewer({ shopId: propShopId }) {
             </div>
 
             <div style={{ width: '100%', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem', textAlign: 'left', fontSize: '0.9rem', color: '#64748b' }}>
+              {lastOrderId && <p style={{ margin: '0.3rem 0' }}>Mã đặt bàn: <strong style={{ color: '#10b981' }}>#{lastOrderId}</strong></p>}
               <p style={{ margin: '0.3rem 0' }}>Khách hàng: <strong style={{ color: 'white' }}>{bookingName}</strong></p>
               <p style={{ margin: '0.3rem 0' }}>Số điện thoại: <strong style={{ color: 'white' }}>{bookingPhone}</strong></p>
               <p style={{ margin: '0.3rem 0' }}>Lịch đặt: <strong style={{ color: 'white' }}>{bookingDate} vào lúc {bookingTime}</strong></p>
               <p style={{ margin: '0.3rem 0' }}>Số người: <strong style={{ color: 'white' }}>{bookingGuests} người</strong></p>
               {bookingNotes && <p style={{ margin: '0.3rem 0' }}>Ghi chú: <strong style={{ color: 'white' }}>{bookingNotes}</strong></p>}
             </div>
+
+            <p style={{ fontSize: '0.85rem', color: '#9ca3af', margin: 0 }}>
+              Bạn có thể tra cứu trạng thái đặt bàn bằng SĐT tại <a href={`/orders/lookup?shopId=${shopId}`} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', textDecoration: 'underline' }}>trang tra cứu</a>.
+            </p>
 
             <button 
               onClick={() => setBookingSuccess(false)}
@@ -1202,11 +1378,16 @@ export default function ShopViewer({ shopId: propShopId }) {
             </div>
 
             <div style={{ width: '100%', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem', textAlign: 'left', fontSize: '0.9rem', color: '#64748b' }}>
+              {lastOrderId && <p style={{ margin: '0.3rem 0' }}>Mã đơn hàng: <strong style={{ color: '#10b981' }}>#{lastOrderId}</strong></p>}
               <p style={{ margin: '0.3rem 0' }}>Khách hàng: <strong style={{ color: 'white' }}>{customerName}</strong></p>
               <p style={{ margin: '0.3rem 0' }}>Số điện thoại: <strong style={{ color: 'white' }}>{customerPhone}</strong></p>
               <p style={{ margin: '0.3rem 0' }}>Địa chỉ nhận món: <strong style={{ color: 'white' }}>{customerAddress}</strong></p>
               <p style={{ margin: '0.3rem 0' }}>Phương thức: <strong style={{ color: 'white' }}>{paymentMethod === 'COD' ? (isGusto ? 'Thanh toán tại quầy/bàn' : 'Thanh toán COD') : 'Chuyển khoản QR'}</strong></p>
             </div>
+
+            <p style={{ fontSize: '0.85rem', color: '#9ca3af', margin: 0 }}>
+              Bạn có thể tra cứu trạng thái đơn hàng bằng SĐT tại <a href={`/orders/lookup?shopId=${shopId}`} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', textDecoration: 'underline' }}>trang tra cứu</a>.
+            </p>
 
             <button 
               onClick={() => setCheckoutSuccess(false)}

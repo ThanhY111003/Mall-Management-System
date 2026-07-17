@@ -10,6 +10,7 @@ export const sportsStoreTemplate = `
       <a href="#shop-now" style="color: #9ca3af; text-decoration: none; font-size: 0.95rem; font-weight: 500;">Giày Thể Thao</a>
       <a href="#shop-now" style="color: #9ca3af; text-decoration: none; font-size: 0.95rem; font-weight: 500;">Quần Áo</a>
       <a href="#discover" style="color: #9ca3af; text-decoration: none; font-size: 0.95rem; font-weight: 500;">Bộ Sưu Tập</a>
+      <a href="/orders/lookup" target="_blank" style="color: #9ca3af; text-decoration: none; font-size: 0.95rem; font-weight: 500;">Tra Cứu Đơn</a>
     </nav>
     <div style="display: flex; align-items: center; gap: 1.5rem;">
       <button style="background: none; border: none; cursor: pointer; color: #fff;">
@@ -76,87 +77,7 @@ export const sportsStoreTemplate = `
     </div>
 
     <!-- Product Grid -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2.5rem; max-width: 1200px; margin: 0 auto;">
-      <!-- Product 1 -->
-      <div class="product-card" data-product-id="1" data-product-name="Nike Air Zoom Lava-Red" data-product-price="2450000" data-product-image="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600" data-product-desc="Giày chạy bộ chuyên nghiệp thế hệ mới với công nghệ đệm khí Air Zoom siêu êm ái, trợ lực tối đa và phần lưới mesh thoáng khí." style="background: #1e293b; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; cursor: pointer;">
-        <div style="position: relative; background: #0f172a; height: 280px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-          <span style="position: absolute; top: 15px; left: 15px; background: #f43f5e; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; z-index: 2; letter-spacing: 1px;">NEW</span>
-          <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600" alt="Nike Air Zoom Alpha" style="width: 80%; height: auto; object-fit: contain;" />
-        </div>
-        <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
-          <span style="color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Giày Chạy Bộ</span>
-          <h3 style="margin: 0.5rem 0 1rem 0; font-size: 1.25rem; font-weight: 700; color: #fff;">Nike Air Zoom Lava-Red</h3>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-            <div>
-              <span style="font-size: 1.35rem; font-weight: 800; color: #fb7185;">2.450.000đ</span>
-            </div>
-            <button class="add-to-cart-btn" data-product-id="1" data-product-name="Nike Air Zoom Lava-Red" data-product-price="2450000" data-product-image="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600" style="background: #f43f5e; border: none; border-radius: 10px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; z-index: 10;">
-              <svg style="width: 20px; height: 20px; fill: currentColor; pointer-events: none;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product 2 -->
-      <div class="product-card" data-product-id="2" data-product-name="Nike Flex Run Lime-Neon" data-product-price="1990000" data-product-image="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?q=80&w=600" data-product-desc="Dòng sản phẩm tối ưu cho các bài tập gym, cardio và chạy cự ly ngắn. Thiết kế màu sắc trẻ trung, nổi bật đầy cá tính." style="background: #1e293b; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; cursor: pointer;">
-        <div style="position: relative; background: #0f172a; height: 280px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-          <span style="position: absolute; top: 15px; left: 15px; background: #10b981; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; z-index: 2; letter-spacing: 1px;">HOT</span>
-          <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?q=80&w=600" alt="Nike Air Zoom Neon" style="width: 80%; height: auto; object-fit: contain;" />
-        </div>
-        <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
-          <span style="color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Giày Tập Luyện</span>
-          <h3 style="margin: 0.5rem 0 1rem 0; font-size: 1.25rem; font-weight: 700; color: #fff;">Nike Flex Run Lime-Neon</h3>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-            <div>
-              <span style="font-size: 1.35rem; font-weight: 800; color: #fb7185;">1.990.000đ</span>
-            </div>
-            <button class="add-to-cart-btn" data-product-id="2" data-product-name="Nike Flex Run Lime-Neon" data-product-price="1990000" data-product-image="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?q=80&w=600" style="background: #f43f5e; border: none; border-radius: 10px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; z-index: 10;">
-              <svg style="width: 20px; height: 20px; fill: currentColor; pointer-events: none;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product 3 -->
-      <div class="product-card" data-product-id="3" data-product-name="Sporty Air Candy-Pastel" data-product-price="1550000" data-product-image="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=600" data-product-desc="Giày thời trang sneaker nữ với tone màu pastel ngọt ngào, chất liệu da nhân tạo kết hợp vải mesh cao cấp, dễ phối với mọi trang phục năng động." style="background: #1e293b; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; cursor: pointer;">
-        <div style="position: relative; background: #0f172a; height: 280px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-          <span style="position: absolute; top: 15px; left: 15px; background: #ef4444; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; z-index: 2; letter-spacing: 1px;">-30%</span>
-          <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=600" alt="Nike Pink Candy" style="width: 80%; height: auto; object-fit: contain;" />
-        </div>
-        <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
-          <span style="color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Sneaker Nữ</span>
-          <h3 style="margin: 0.5rem 0 1rem 0; font-size: 1.25rem; font-weight: 700; color: #fff;">Sporty Air Candy-Pastel</h3>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-            <div>
-              <span style="font-size: 1.35rem; font-weight: 800; color: #fb7185;">1.550.000đ</span>
-              <span style="font-size: 0.9rem; color: #64748b; text-decoration: line-through; margin-left: 0.5rem;">2.200.000đ</span>
-            </div>
-            <button class="add-to-cart-btn" data-product-id="3" data-product-name="Sporty Air Candy-Pastel" data-product-price="1550000" data-product-image="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=600" style="background: #f43f5e; border: none; border-radius: 10px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; z-index: 10;">
-              <svg style="width: 20px; height: 20px; fill: currentColor; pointer-events: none;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product 4 -->
-      <div class="product-card" data-product-id="4" data-product-name="Bộ Đồ Tập Gym Dry-Fit Pro" data-product-price="850000" data-product-image="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600" data-product-desc="Bộ quần áo tập cao cấp sử dụng chất liệu thun lạnh Dry-Fit co giãn 4 chiều, siêu thấm hút mồ hôi, giữ cơ thể luôn mát mẻ trong quá trình luyện tập." style="background: #1e293b; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; cursor: pointer;">
-        <div style="position: relative; background: #0f172a; height: 280px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-          <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600" alt="Sportswear Set" style="width: 80%; height: auto; object-fit: contain;" />
-        </div>
-        <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
-          <span style="color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Quần Áo Thể Thao</span>
-          <h3 style="margin: 0.5rem 0 1rem 0; font-size: 1.25rem; font-weight: 700; color: #fff;">Bộ Đồ Tập Gym Dry-Fit Pro</h3>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-            <div>
-              <span style="font-size: 1.35rem; font-weight: 800; color: #fb7185;">850.000đ</span>
-            </div>
-            <button class="add-to-cart-btn" data-product-id="4" data-product-name="Bộ Đồ Tập Gym Dry-Fit Pro" data-product-price="850000" data-product-image="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600" style="background: #f43f5e; border: none; border-radius: 10px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; z-index: 10;">
-              <svg style="width: 20px; height: 20px; fill: currentColor; pointer-events: none;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div id="dynamic-products-container" class="products-grid" style="max-width: 1200px; margin: 0 auto;"></div>
   </section>
 
   <!-- Hot Deal Section -->

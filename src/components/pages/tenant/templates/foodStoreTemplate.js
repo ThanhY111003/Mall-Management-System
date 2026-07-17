@@ -10,6 +10,7 @@ export const foodStoreTemplate = `
       <a href="#menu-section" style="color: #c9c1b5; text-decoration: none; font-size: 0.95rem; font-weight: 500;">Thực Đơn</a>
       <a href="#voucher-section" style="color: #c9c1b5; text-decoration: none; font-size: 0.95rem; font-weight: 500;">Đặt Vé & Voucher</a>
       <button class="book-table-btn" style="background: none; border: none; padding: 0; color: #c9c1b5; font-size: 0.95rem; font-weight: 500; cursor: pointer;">Đặt Bàn</button>
+      <a href="/orders/lookup" target="_blank" style="color: #c9c1b5; text-decoration: none; font-size: 0.95rem; font-weight: 500;">Tra Cứu Đơn</a>
     </nav>
     <div style="display: flex; align-items: center; gap: 1.5rem;">
       <button class="book-table-btn" style="background: linear-gradient(135deg, #e65f2b, #ff8c32); border: none; padding: 0.6rem 1.2rem; border-radius: 20px; color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 15px rgba(230, 95, 43, 0.35);">Đặt Bàn Ngay</button>
@@ -74,84 +75,7 @@ export const foodStoreTemplate = `
     </div>
 
     <!-- Product Grid (Dishes) -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2.5rem; max-width: 1200px; margin: 0 auto;">
-      <!-- Dish 1 -->
-      <div class="product-card" data-product-id="food-1" data-product-name="Ribeye Steak Gold" data-product-price="380000" data-product-image="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=600" data-product-desc="Thăn lưng bò Mỹ Ribeye nướng củi gỗ sồi, ngoài xém vàng thơm lừng, trong hồng hào mọng nước. Đi kèm sốt tiêu đen đặc biệt." style="background: #18100e; border-radius: 20px; overflow: hidden; border: 1px solid rgba(230,95,43,0.08); display: flex; flex-direction: column; cursor: pointer;">
-        <div style="position: relative; background: #0f0705; height: 280px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-          <span style="position: absolute; top: 15px; left: 15px; background: #e65f2b; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; z-index: 2; letter-spacing: 1px;">BEST</span>
-          <img src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=600" alt="Ribeye Steak" style="width: 100%; height: 100%; object-fit: cover;" />
-        </div>
-        <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
-          <span style="color: #ff8c32; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Steak Bò Mỹ</span>
-          <h3 style="margin: 0.5rem 0 1rem 0; font-size: 1.25rem; font-weight: 700; color: #fff;">Ribeye Steak Gold</h3>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-            <div>
-              <span style="font-size: 1.35rem; font-weight: 800; color: #ff8c32;">380.000đ</span>
-            </div>
-            <button class="add-to-cart-btn" data-product-id="food-1" data-product-name="Ribeye Steak Gold" data-product-price="380000" data-product-image="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=600" style="background: #e65f2b; border: none; border-radius: 10px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; z-index: 10;">
-              <svg style="width: 20px; height: 20px; fill: currentColor; pointer-events: none;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Dish 2 -->
-      <div class="product-card" data-product-id="food-2" data-product-name="Salmon Sashimi Deluxe" data-product-price="290000" data-product-image="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=600" data-product-desc="Cá hồi Nauy tươi rói, thái lát dày chuẩn truyền thống Nhật Bản, kèm mù tạt Wasabi tươi và nước tương thượng hạng." style="background: #18100e; border-radius: 20px; overflow: hidden; border: 1px solid rgba(230,95,43,0.08); display: flex; flex-direction: column; cursor: pointer;">
-        <div style="position: relative; background: #0f0705; height: 280px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-          <img src="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=600" alt="Salmon Sashimi" style="width: 100%; height: 100%; object-fit: cover;" />
-        </div>
-        <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
-          <span style="color: #ff8c32; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Sashimi</span>
-          <h3 style="margin: 0.5rem 0 1rem 0; font-size: 1.25rem; font-weight: 700; color: #fff;">Salmon Sashimi Deluxe</h3>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-            <div>
-              <span style="font-size: 1.35rem; font-weight: 800; color: #ff8c32;">290.000đ</span>
-            </div>
-            <button class="add-to-cart-btn" data-product-id="food-2" data-product-name="Salmon Sashimi Deluxe" data-product-price="290000" data-product-image="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=600" style="background: #e65f2b; border: none; border-radius: 10px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; z-index: 10;">
-              <svg style="width: 20px; height: 20px; fill: currentColor; pointer-events: none;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Dish 3 -->
-      <div class="product-card" data-product-id="food-3" data-product-name="Wagyu Beef Burger" data-product-price="180000" data-product-image="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600" data-product-desc="Burger cao cấp với nhân thịt bò Wagyu xay tay nướng mọng nước, phô mai Cheddar chảy, hành tây caramel và nước sốt đặc trưng." style="background: #18100e; border-radius: 20px; overflow: hidden; border: 1px solid rgba(230,95,43,0.08); display: flex; flex-direction: column; cursor: pointer;">
-        <div style="position: relative; background: #0f0705; height: 280px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-          <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600" alt="Wagyu Burger" style="width: 100%; height: 100%; object-fit: cover;" />
-        </div>
-        <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
-          <span style="color: #ff8c32; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Fast Casual</span>
-          <h3 style="margin: 0.5rem 0 1rem 0; font-size: 1.25rem; font-weight: 700; color: #fff;">Wagyu Beef Burger</h3>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-            <div>
-              <span style="font-size: 1.35rem; font-weight: 800; color: #ff8c32;">180.000đ</span>
-            </div>
-            <button class="add-to-cart-btn" data-product-id="food-3" data-product-name="Wagyu Beef Burger" data-product-price="180000" data-product-image="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600" style="background: #e65f2b; border: none; border-radius: 10px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; z-index: 10;">
-              <svg style="width: 20px; height: 20px; fill: currentColor; pointer-events: none;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Dish 4 -->
-      <div class="product-card" data-product-id="food-4" data-product-name="Truffle Carbonara Pasta" data-product-price="220000" data-product-image="https://images.unsplash.com/photo-1612874742237-6526221588e3?q=80&w=600" data-product-desc="Mỳ Ý Carbonara sốt kem phô mai Parmesan béo ngậy, kết hợp thịt ba rọi xông khói áp chảo giòn và sốt dầu nấm Truffle đen quý hiếm." style="background: #18100e; border-radius: 20px; overflow: hidden; border: 1px solid rgba(230,95,43,0.08); display: flex; flex-direction: column; cursor: pointer;">
-        <div style="position: relative; background: #0f0705; height: 280px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-          <img src="https://images.unsplash.com/photo-1612874742237-6526221588e3?q=80&w=600" alt="Truffle Pasta" style="width: 100%; height: 100%; object-fit: cover;" />
-        </div>
-        <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
-          <span style="color: #ff8c32; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Mỳ Ý</span>
-          <h3 style="margin: 0.5rem 0 1rem 0; font-size: 1.25rem; font-weight: 700; color: #fff;">Truffle Carbonara Pasta</h3>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-            <div>
-              <span style="font-size: 1.35rem; font-weight: 800; color: #ff8c32;">220.000đ</span>
-            </div>
-            <button class="add-to-cart-btn" data-product-id="food-4" data-product-name="Truffle Carbonara Pasta" data-product-price="220000" data-product-image="https://images.unsplash.com/photo-1612874742237-6526221588e3?q=80&w=600" style="background: #e65f2b; border: none; border-radius: 10px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; z-index: 10;">
-              <svg style="width: 20px; height: 20px; fill: currentColor; pointer-events: none;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div id="dynamic-products-container" class="products-grid" style="max-width: 1200px; margin: 0 auto;"></div>
   </section>
 
   <!-- Tickets & Voucher Section -->

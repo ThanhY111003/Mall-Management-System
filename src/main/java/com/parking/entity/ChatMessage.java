@@ -24,4 +24,6 @@ public class ChatMessage {
     private String content;
     
     private LocalDateTime timestamp;
+    
+    private Boolean isRead; // default: false (null/false counts as unread)
 }

@@ -1,5 +1,6 @@
 package com.parking.config;
 
+import com.parking.websocket.AuthHandshakeInterceptor;
 import com.parking.websocket.ChatWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(chatWebSocketHandler, "/chat-ws")
+                .addInterceptors(new AuthHandshakeInterceptor())
                 .setAllowedOrigins("*");
     }
 }

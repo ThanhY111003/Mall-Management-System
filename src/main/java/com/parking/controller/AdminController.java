@@ -21,9 +21,15 @@ public class AdminController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    public record UserDTO(Long id, String username, String role) {
+        public static UserDTO from(User u) {
+            return new UserDTO(u.getId(), u.getUsername(), u.getRole().name());
+        }
+    }
+
     @GetMapping
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDTO> getAllUsers() {
+        return userRepository.findAll().stream().map(UserDTO::from).toList();
     }
 
     @PostMapping
@@ -34,6 +40,6 @@ public class AdminController {
 
         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
         User savedUser = userRepository.save(newUser);
-        return ResponseEntity.ok(savedUser);
+        return ResponseEntity.ok(UserDTO.from(savedUser));
     }
 }

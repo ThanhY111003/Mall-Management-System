@@ -2,7 +2,12 @@ package com.parking.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.parking.entity.ChatMessage;
+import com.parking.entity.Role;
+import com.parking.entity.Shop;
+import com.parking.entity.User;
 import com.parking.repository.ChatMessageRepository;
+import com.parking.repository.ShopRepository;
+import com.parking.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
@@ -19,6 +24,12 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Autowired
     private ChatMessageRepository chatMessageRepository;
+
+    @Autowired
+    private ShopRepository shopRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -40,11 +51,40 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         
         String role = queryParams.get("role");
         if ("tenant".equalsIgnoreCase(role)) {
+            String username = (String) session.getAttributes().get("authenticatedUsername");
+            if (username == null) {
+                session.close(CloseStatus.POLICY_VIOLATION.withReason("Chưa đăng nhập"));
+                return;
+            }
+
+            var userOpt = userRepository.findByUsername(username);
+            var shopOpt = shopRepository.findById(shopId);
+
+            if (userOpt.isEmpty() || shopOpt.isEmpty()) {
+                session.close(CloseStatus.POLICY_VIOLATION.withReason("Không hợp lệ"));
+                return;
+            }
+
+            User user = userOpt.get();
+            Shop shop = shopOpt.get();
+            boolean isOwner = shop.getTenant() != null && shop.getTenant().getId().equals(user.getId());
+            boolean isAdmin = user.getRole() == Role.ADMIN;
+
+            if (!isOwner && !isAdmin) {
+                session.close(CloseStatus.POLICY_VIOLATION.withReason("Bạn không sở hữu shop này"));
+                return;
+            }
+
+            session.getAttributes().put("isTenant", true);
+            session.getAttributes().put("shopId", shopId);
             tenantSessions.put(shopId, session);
-            System.out.println(">>> WebSocket: Tenant connected for Shop #" + shopId);
+            System.out.println(">>> WebSocket: Tenant [" + username + "] connected for Shop #" + shopId);
         } else {
             String clientId = queryParams.get("clientId");
             if (clientId != null) {
+                session.getAttributes().put("isTenant", false);
+                session.getAttributes().put("shopId", shopId);
+                session.getAttributes().put("clientId", clientId);
                 customerSessions.put(shopId + ":" + clientId, session);
                 System.out.println(">>> WebSocket: Customer connected (" + clientId + ") for Shop #" + shopId);
             } else {
@@ -55,12 +95,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        Map<String, String> queryParams = parseQueryParams(session.getUri().getQuery());
-        String shopIdStr = queryParams.get("shopId");
-        if (shopIdStr == null) return;
-        Long shopId = Long.parseLong(shopIdStr);
+        Boolean isTenant = (Boolean) session.getAttributes().get("isTenant");
+        Long shopId = (Long) session.getAttributes().get("shopId");
+        if (isTenant == null || shopId == null) {
+            session.close(CloseStatus.POLICY_VIOLATION);
+            return;
+        }
         
-        String role = queryParams.get("role");
         String payload = message.getPayload();
         
         @SuppressWarnings("unchecked")
@@ -69,7 +110,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         String content = messageData.get("content");
         if (content == null || content.trim().isEmpty()) return;
         
-        if ("tenant".equalsIgnoreCase(role)) {
+        if (isTenant) {
             // Message sent by Tenant
             String clientId = messageData.get("clientId");
             if (clientId == null) return;
@@ -80,6 +121,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     .sender("TENANT")
                     .content(content)
                     .timestamp(LocalDateTime.now())
+                    .isRead(true)
                     .build();
             
             chatMsg = chatMessageRepository.save(chatMsg);
@@ -108,7 +150,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             }
         } else {
             // Message sent by Customer
-            String clientId = queryParams.get("clientId");
+            String clientId = (String) session.getAttributes().get("clientId");
             if (clientId == null) return;
             
             ChatMessage chatMsg = ChatMessage.builder()
@@ -117,6 +159,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     .sender("CUSTOMER")
                     .content(content)
                     .timestamp(LocalDateTime.now())
+                    .isRead(false)
                     .build();
             
             chatMsg = chatMessageRepository.save(chatMsg);
@@ -147,17 +190,15 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        Map<String, String> queryParams = parseQueryParams(session.getUri().getQuery());
-        String shopIdStr = queryParams.get("shopId");
-        if (shopIdStr == null) return;
-        Long shopId = Long.parseLong(shopIdStr);
+        Boolean isTenant = (Boolean) session.getAttributes().get("isTenant");
+        Long shopId = (Long) session.getAttributes().get("shopId");
+        if (shopId == null) return;
         
-        String role = queryParams.get("role");
-        if ("tenant".equalsIgnoreCase(role)) {
+        if (isTenant != null && isTenant) {
             tenantSessions.remove(shopId);
             System.out.println("<<< WebSocket: Tenant disconnected for Shop #" + shopId);
         } else {
-            String clientId = queryParams.get("clientId");
+            String clientId = (String) session.getAttributes().get("clientId");
             if (clientId != null) {
                 customerSessions.remove(shopId + ":" + clientId);
                 System.out.println("<<< WebSocket: Customer disconnected (" + clientId + ") for Shop #" + shopId);

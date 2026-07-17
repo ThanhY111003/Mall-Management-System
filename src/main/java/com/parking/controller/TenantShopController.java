@@ -30,4 +30,30 @@ public class TenantShopController {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Tenant"));
         return shopRepository.findByTenantId(tenant.getId());
     }
+
+    @Autowired
+    private com.parking.repository.OrderRepository orderRepository;
+
+    @Autowired
+    private com.parking.repository.ChatMessageRepository chatMessageRepository;
+
+    @GetMapping("/notifications")
+    public java.util.Map<Long, java.util.Map<String, Long>> getNotifications(Principal principal) {
+        User tenant = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Tenant"));
+        List<Shop> shops = shopRepository.findByTenantId(tenant.getId());
+        
+        java.util.Map<Long, java.util.Map<String, Long>> notifications = new java.util.HashMap<>();
+        for (Shop shop : shops) {
+            long pendingOrders = orderRepository.countByShopIdAndStatus(shop.getId(), "PENDING");
+            long unreadChats = chatMessageRepository.countUnreadByShopId(shop.getId());
+            
+            java.util.Map<String, Long> shopNotifs = new java.util.HashMap<>();
+            shopNotifs.put("pendingOrders", pendingOrders);
+            shopNotifs.put("unreadChats", unreadChats);
+            
+            notifications.put(shop.getId(), shopNotifs);
+        }
+        return notifications;
+    }
 }
