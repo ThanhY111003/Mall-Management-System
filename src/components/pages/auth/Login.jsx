@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../App.jsx';
+import { authFetch } from '../../../utils/csrf.js';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -29,7 +30,7 @@ export default function Login() {
     }
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await authFetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',

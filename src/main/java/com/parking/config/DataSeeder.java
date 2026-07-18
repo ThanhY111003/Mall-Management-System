@@ -3,6 +3,7 @@ package com.parking.config;
 import com.parking.entity.Role;
 import com.parking.entity.Shop;
 import com.parking.entity.User;
+import com.parking.entity.ShopStatus;
 import com.parking.repository.ShopRepository;
 import com.parking.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,17 +55,17 @@ public class DataSeeder implements CommandLineRunner {
         if (shopRepository.count() == 0) {
             Shop shop1 = Shop.builder()
                     .shopName("Sạp Thời Trang A1")
-                    .status("AVAILABLE")
+                    .status(ShopStatus.AVAILABLE)
                     .build();
 
             Shop shop2 = Shop.builder()
                     .shopName("Cửa Hàng Giày Dép B2")
-                    .status("AVAILABLE")
+                    .status(ShopStatus.AVAILABLE)
                     .build();
 
             Shop shop3 = Shop.builder()
                     .shopName("Sạp Bách Hóa C3")
-                    .status("AVAILABLE")
+                    .status(ShopStatus.AVAILABLE)
                     .build();
 
             shopRepository.saveAll(List.of(shop1, shop2, shop3));

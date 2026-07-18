@@ -19,7 +19,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Tạm tắt CSRF để dễ test API
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler())
+                        .ignoringRequestMatchers("/api/public/**", "/api/auth/login")
+                )
+                .addFilterAfter(new CsrfCookieFilter(), org.springframework.security.web.csrf.CsrfFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         // Cho phép truy cập công khai các API xác thực, xem shop và WebSocket chat
                         .requestMatchers("/api/auth/**", "/api/public/**", "/chat-ws/**").permitAll()

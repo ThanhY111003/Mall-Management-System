@@ -45,8 +45,12 @@ public class PublicOrderController {
                 List<Map<String, Object>> items = objectMapper.readValue(order.getItemsJson(), new TypeReference<List<Map<String, Object>>>() {});
                 int recalculated = 0;
                 for (Map<String, Object> item : items) {
-                    String idStr = item.get("id").toString();
-                    Integer quantity = (Integer) item.get("quantity");
+                    Object rawId = item.get("id");
+                    Object rawQty = item.get("quantity");
+                    if (rawId == null || rawQty == null) continue; // bỏ qua item lỗi thay vì crash
+
+                    Integer quantity = (Integer) rawQty;
+                    String idStr = rawId.toString();
                     try {
                         Long productId = Long.valueOf(idStr);
                         Product product = productRepository.findById(productId).orElse(null);
@@ -55,11 +59,11 @@ public class PublicOrderController {
                             continue;
                         }
                     } catch (NumberFormatException e) {
-                        // fall back to client price for old static templates
+                        // fall back
                     }
-                    Integer clientPrice = (Integer) item.get("price");
-                    if (clientPrice != null) {
-                        recalculated += clientPrice * quantity;
+                    Object rawPrice = item.get("price");
+                    if (rawPrice != null) {
+                        recalculated += ((Integer) rawPrice) * quantity;
                     }
                 }
                 order.setTotalAmount(recalculated);

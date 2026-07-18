@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { authFetch } from '../../../utils/csrf.js';
 
 export default function TenantChat() {
   const { shopId } = useParams();
@@ -77,7 +78,7 @@ export default function TenantChat() {
       .catch(err => console.error('Error fetching chat history:', err));
 
     // Mark conversation as read
-    fetch(`/api/chat/mark-read/${shopId}/${activeClientId}`, {
+    authFetch(`/api/chat/mark-read/${shopId}/${activeClientId}`, {
       method: 'POST'
     }).catch(err => console.error('Error marking as read:', err));
   }, [shopId, activeClientId]);
@@ -111,7 +112,7 @@ export default function TenantChat() {
             return prev;
           }
           if (incomingMsg.clientId === activeClientId) {
-            fetch(`/api/chat/mark-read/${shopId}/${activeClientId}`, { method: 'POST' })
+            authFetch(`/api/chat/mark-read/${shopId}/${activeClientId}`, { method: 'POST' })
               .catch(err => console.error('Error marking as read:', err));
             return [...prev, incomingMsg];
           }

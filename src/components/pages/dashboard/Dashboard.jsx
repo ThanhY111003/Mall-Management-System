@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../App.jsx';
+import { authFetch } from '../../../utils/csrf.js';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -23,6 +24,16 @@ export default function Dashboard() {
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newUserRole, setNewUserRole] = useState('TENANT');
+  
+  const [showEditShopModal, setShowEditShopModal] = useState(false);
+  const [editingShop, setEditingShop] = useState(null);
+  const [editShopName, setEditShopName] = useState('');
+
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editUsername, setEditUsername] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editUserRole, setEditUserRole] = useState('TENANT');
   
   const [selectedShop, setSelectedShop] = useState(null);
   const [selectedTenantId, setSelectedTenantId] = useState('');
@@ -118,7 +129,7 @@ export default function Dashboard() {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch('/api/admin/shops', {
+      const res = await authFetch('/api/admin/shops', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ shopName: newShopName })
@@ -135,14 +146,63 @@ export default function Dashboard() {
       setError('Đã xảy ra lỗi hệ thống.');
     }
   };
+  const openEditShopModal = (shop) => {
+    setEditingShop(shop);
+    setEditShopName(shop.shopName);
+    setShowEditShopModal(true);
+  };
 
+  const handleEditShop = async (e) => {
+    e.preventDefault();
+    if (!editShopName.trim()) {
+      setError('Tên sạp hàng không được trống!');
+      return;
+    }
+    setError('');
+    setSuccess('');
+    try {
+      const res = await authFetch(`/api/admin/shops/${editingShop.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shopName: editShopName }),
+      });
+      if (!res.ok) {
+        throw new Error(await res.text() || 'Cập nhật sạp hàng thất bại.');
+      }
+      setSuccess('Cập nhật sạp hàng thành công!');
+      setShowEditShopModal(false);
+      setEditingShop(null);
+      setEditShopName('');
+      fetchData();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDeleteShop = async (shopId) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa sạp hàng này?')) return;
+    setError('');
+    setSuccess('');
+    try {
+      const res = await authFetch(`/api/admin/shops/${shopId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        throw new Error(await res.text() || 'Xóa sạp hàng thất bại.');
+      }
+      setSuccess('Xóa sạp hàng thành công!');
+      fetchData();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
   const handleCreateUser = async (e) => {
     e.preventDefault();
     if (!newUsername.trim() || !newPassword.trim()) return;
     setError('');
     setSuccess('');
     try {
-      const res = await fetch('/api/admin/users', {
+      const res = await authFetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: newUsername, password: newPassword, role: newUserRole })
@@ -161,13 +221,72 @@ export default function Dashboard() {
       setError('Đã xảy ra lỗi hệ thống.');
     }
   };
+  const openEditUserModal = (userToEdit) => {
+    setEditingUser(userToEdit);
+    setEditUsername(userToEdit.username);
+    setEditPassword('');
+    setEditUserRole(userToEdit.role);
+    setShowEditUserModal(true);
+  };
 
+  const handleEditUser = async (e) => {
+    e.preventDefault();
+    if (!editUsername.trim()) {
+      setError('Tên đăng nhập không được trống!');
+      return;
+    }
+    setError('');
+    setSuccess('');
+    try {
+      const payload = {
+        username: editUsername,
+        role: editUserRole,
+      };
+      if (editPassword.trim()) {
+        payload.password = editPassword;
+      }
+      const res = await authFetch(`/api/admin/users/${editingUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        throw new Error(await res.text() || 'Cập nhật tài khoản thất bại.');
+      }
+      setSuccess('Cập nhật tài khoản thành công!');
+      setShowEditUserModal(false);
+      setEditingUser(null);
+      setEditUsername('');
+      setEditPassword('');
+      fetchData();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa tài khoản này? Toàn bộ các sạp liên kết của tài khoản sẽ được trả về trạng thái trống.')) return;
+    setError('');
+    setSuccess('');
+    try {
+      const res = await authFetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        throw new Error(await res.text() || 'Xóa tài khoản thất bại.');
+      }
+      setSuccess('Xóa tài khoản thành công!');
+      fetchData();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
   // RESELLER actions
   const handleClaimShop = async (shopId) => {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch(`/api/reseller/shops/assign/${shopId}`, {
+      const res = await authFetch(`/api/reseller/shops/assign/${shopId}`, {
         method: 'POST'
       });
       const text = await res.text();
@@ -188,7 +307,7 @@ export default function Dashboard() {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch(`/api/reseller/shops/rent/${selectedShop.id}`, {
+      const res = await authFetch(`/api/reseller/shops/rent/${selectedShop.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ tenantId: selectedTenantId })
@@ -235,7 +354,7 @@ export default function Dashboard() {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch(`/api/tenant/orders/update-status/${orderId}?status=${status}`, {
+      const res = await authFetch(`/api/tenant/orders/update-status/${orderId}?status=${status}`, {
         method: 'POST'
       });
       if (res.ok) {
@@ -340,12 +459,13 @@ export default function Dashboard() {
                         <th>Trạng Thái</th>
                         <th>Người Quản Lý (Reseller)</th>
                         <th>Người Thuê (Tenant)</th>
+                        <th>Hành Động</th>
                       </tr>
                     </thead>
                     <tbody>
                       {shops.length === 0 ? (
                         <tr>
-                          <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Chưa có sạp hàng nào</td>
+                          <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Chưa có sạp hàng nào</td>
                         </tr>
                       ) : (
                         shops.map(s => (
@@ -359,6 +479,16 @@ export default function Dashboard() {
                             </td>
                             <td>{s.reseller ? s.reseller.username : <span style={{ color: 'var(--text-muted)' }}>Chưa có</span>}</td>
                             <td>{s.tenant ? s.tenant.username : <span style={{ color: 'var(--text-muted)' }}>Chưa có</span>}</td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <button onClick={() => openEditShopModal(s)} className="btn btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>Sửa</button>
+                                {s.reseller === null && s.tenant === null ? (
+                                  <button onClick={() => handleDeleteShop(s.id)} className="btn btn-danger" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>Xóa</button>
+                                ) : (
+                                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>(Không được xóa)</span>
+                                )}
+                              </div>
+                            </td>
                           </tr>
                         ))
                       )}
@@ -382,6 +512,7 @@ export default function Dashboard() {
                         <th>ID</th>
                         <th>Tên Đăng Nhập</th>
                         <th>Vai Trò (Role)</th>
+                        <th>Hành Động</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -391,6 +522,16 @@ export default function Dashboard() {
                           <td style={{ fontWeight: 600 }}>{u.username}</td>
                           <td>
                             <span className={`role-tag ${u.role.toLowerCase()}`}>{u.role}</span>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <button onClick={() => openEditUserModal(u)} className="btn btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>Sửa</button>
+                              {u.username !== user.username ? (
+                                <button onClick={() => handleDeleteUser(u.id)} className="btn btn-danger" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>Xóa</button>
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>(Tài khoản của bạn)</span>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -643,6 +784,81 @@ export default function Dashboard() {
               <div className="modal-footer" style={{ marginTop: '1rem' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowShopModal(false)}>Hủy</button>
                 <button type="submit" className="btn btn-primary">Lưu Lại</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Shop Modal */}
+      {showEditShopModal && (
+        <div className="modal-overlay">
+          <div className="glass-panel modal-content">
+            <div className="modal-header">
+              <h3>Sửa Tên Sạp Hàng</h3>
+              <button className="modal-close" onClick={() => { setShowEditShopModal(false); setEditingShop(null); }}>×</button>
+            </div>
+            <form onSubmit={handleEditShop}>
+              <div className="form-group">
+                <label>Tên Sạp Hàng Mới</label>
+                <input 
+                  type="text" 
+                  value={editShopName}
+                  onChange={(e) => setEditShopName(e.target.value)}
+                  required 
+                />
+              </div>
+              <div className="modal-footer" style={{ marginTop: '1rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => { setShowEditShopModal(false); setEditingShop(null); }}>Hủy</button>
+                <button type="submit" className="btn btn-primary">Lưu Thay Đổi</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditUserModal && (
+        <div className="modal-overlay">
+          <div className="glass-panel modal-content">
+            <div className="modal-header">
+              <h3>Sửa Tài Khoản</h3>
+              <button className="modal-close" onClick={() => { setShowEditUserModal(false); setEditingUser(null); }}>×</button>
+            </div>
+            <form onSubmit={handleEditUser}>
+              <div className="form-group">
+                <label>Tên Đăng Nhập</label>
+                <input 
+                  type="text" 
+                  value={editUsername}
+                  onChange={(e) => setEditUsername(e.target.value)}
+                  required 
+                />
+              </div>
+              <div className="form-group">
+                <label>Mật Khẩu Mới (Để trống nếu không đổi)</label>
+                <input 
+                  type="password" 
+                  placeholder="••••••••"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label>Vai Trò (Role)</label>
+                <select 
+                  value={editUserRole}
+                  onChange={(e) => setEditUserRole(e.target.value)}
+                  style={{ background: '#1f2937', color: 'white', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '0.5rem', width: '100%' }}
+                >
+                  <option value="TENANT">Tenant (Thuê Sạp)</option>
+                  <option value="RESELLER">Reseller (Nhận Quản Lý)</option>
+                  <option value="ADMIN">Admin (Quản Trị Viên)</option>
+                </select>
+              </div>
+              <div className="modal-footer" style={{ marginTop: '1.5rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => { setShowEditUserModal(false); setEditingUser(null); }}>Hủy</button>
+                <button type="submit" className="btn btn-primary">Lưu Thay Đổi</button>
               </div>
             </form>
           </div>

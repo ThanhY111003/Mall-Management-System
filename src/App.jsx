@@ -7,6 +7,7 @@ import ShopViewer from './components/pages/public/ShopViewer.jsx';
 import TenantChat from './components/pages/tenant/TenantChat.jsx';
 import TenantProducts from './components/pages/tenant/TenantProducts.jsx';
 import OrderLookup from './components/pages/public/OrderLookup.jsx';
+import { authFetch } from './utils/csrf.js';
 
 // Create Authentication Context
 const AuthContext = createContext(null);
@@ -125,7 +126,7 @@ export default function App() {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await authFetch('/api/auth/logout', { method: 'POST' });
     } catch (e) {
       console.error(e);
     }

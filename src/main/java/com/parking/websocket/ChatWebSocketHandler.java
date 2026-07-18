@@ -195,12 +195,12 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         if (shopId == null) return;
         
         if (isTenant != null && isTenant) {
-            tenantSessions.remove(shopId);
+            tenantSessions.remove(shopId, session);
             System.out.println("<<< WebSocket: Tenant disconnected for Shop #" + shopId);
         } else {
             String clientId = (String) session.getAttributes().get("clientId");
             if (clientId != null) {
-                customerSessions.remove(shopId + ":" + clientId);
+                customerSessions.remove(shopId + ":" + clientId, session);
                 System.out.println("<<< WebSocket: Customer disconnected (" + clientId + ") for Shop #" + shopId);
             }
         }

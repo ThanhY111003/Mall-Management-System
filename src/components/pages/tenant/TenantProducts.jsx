@@ -1,6 +1,7 @@
 // src/components/pages/tenant/TenantProducts.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { authFetch } from '../../../utils/csrf.js';
 
 export default function TenantProducts() {
   const { shopId } = useParams();
@@ -17,7 +18,7 @@ export default function TenantProducts() {
 
   const loadProducts = () => {
     setLoading(true);
-    fetch(`/api/tenant/products/${shopId}`)
+    authFetch(`/api/tenant/products/${shopId}`)
       .then(res => { if (!res.ok) throw new Error('Không thể tải sản phẩm.'); return res.json(); })
       .then(setProducts)
       .catch(err => setError(err.message))
@@ -55,7 +56,7 @@ export default function TenantProducts() {
     try {
       const url = editingProduct ? `/api/tenant/products/${editingProduct.id}` : '/api/tenant/products';
       const method = editingProduct ? 'PUT' : 'POST';
-      const res = await fetch(url, {
+      const res = await authFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -71,7 +72,7 @@ export default function TenantProducts() {
   const handleDelete = async (id) => {
     if (!window.confirm('Xóa sản phẩm này?')) return;
     try {
-      const res = await fetch(`/api/tenant/products/${id}`, { method: 'DELETE' });
+      const res = await authFetch(`/api/tenant/products/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Xóa thất bại.');
       loadProducts();
     } catch (err) {

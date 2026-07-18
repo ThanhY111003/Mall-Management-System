@@ -2,6 +2,7 @@ package com.parking.controller;
 
 import com.parking.entity.Shop;
 import com.parking.entity.User;
+import com.parking.entity.ShopStatus;
 import com.parking.repository.ShopRepository;
 import com.parking.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class ResellerController {
     @GetMapping("/available")
     @PreAuthorize("hasRole('RESELLER')")
     public List<Shop> getAvailableShops() {
-        return shopRepository.findByStatus("AVAILABLE");
+        return shopRepository.findByStatus(ShopStatus.AVAILABLE);
     }
 
     // 2. Reseller chọn shop để quản lý
@@ -35,7 +36,7 @@ public class ResellerController {
         Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> new RuntimeException("Shop không tồn tại"));
 
-        if (!"AVAILABLE".equals(shop.getStatus())) {
+        if (shop.getStatus() != ShopStatus.AVAILABLE) {
             return "Shop này đã có người quản lý!";
         }
 
@@ -44,7 +45,7 @@ public class ResellerController {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Reseller"));
 
         shop.setReseller(reseller);
-        shop.setStatus("MANAGED");
+        shop.setStatus(ShopStatus.MANAGED);
         shopRepository.save(shop);
 
         return "Chúc mừng! Bạn đã nhận quản lý shop: " + shop.getShopName();
@@ -80,7 +81,7 @@ public class ResellerController {
         }
 
         shop.setTenant(tenant);
-        shop.setStatus("RENTED");
+        shop.setStatus(ShopStatus.RENTED);
         shopRepository.save(shop);
 
         return "Đã cho thuê sạp hàng thành công cho: " + tenant.getUsername();

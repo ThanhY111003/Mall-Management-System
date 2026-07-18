@@ -16,7 +16,9 @@ public class Shop {
     private Long id;
 
     private String shopName; // Ví dụ: Sạp A1, Sạp A2
-    private String status;   // AVAILABLE, RENTED
+
+    @Enumerated(EnumType.STRING)
+    private ShopStatus status;   // AVAILABLE, MANAGED, RENTED
 
     @ManyToOne
     @JoinColumn(name = "reseller_id")
